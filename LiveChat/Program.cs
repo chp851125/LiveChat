@@ -1,3 +1,4 @@
+using LiveChat.DevTools;
 using LiveChat.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,10 +11,31 @@ builder.Services.AddSingleton(typeof(IRepository<>), typeof(JsonFileRepository<>
 
 // Service 註冊區（builder.Services.AddScoped<IXxxService, XxxService>();）
 
+// Development 工具
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSingleton<SeedResetService>();
+}
+
 var app = builder.Build();
 
 // 首次啟動時建立 App_Data
 SeedDataInitializer.Initialize(app.Environment.ContentRootPath);
+
+// dotnet run -- --seed：重新產生測試資料並驗證後結束（僅 Development）
+if (app.Environment.IsDevelopment() && args.Contains("--seed"))
+{
+    var checks = app.Services.GetRequiredService<SeedResetService>().Reset();
+    foreach (var check in checks)
+    {
+        Console.WriteLine($"[{(check.Passed ? "通過" : "失敗")}] {check.Name}：{check.Detail}");
+    }
+
+    var failedCount = checks.Count(x => !x.Passed);
+    Console.WriteLine($"SeedData 驗證：{checks.Count - failedCount}/{checks.Count} 項通過");
+    Environment.ExitCode = failedCount == 0 ? 0 : 1;
+    return;
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

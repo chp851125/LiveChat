@@ -1,1 +1,38 @@
-[]
+[
+  {
+    "id": "00000000-0000-0000-0001-000000000001",
+    "userName": "admin1",
+    "displayName": "陳怡君",
+    "role": "Admin"
+  },
+  {
+    "id": "00000000-0000-0000-0001-000000000002",
+    "userName": "admin2",
+    "displayName": "林志明",
+    "role": "Admin"
+  },
+  {
+    "id": "00000000-0000-0000-0001-000000000003",
+    "userName": "admin3",
+    "displayName": "黃淑芬",
+    "role": "Admin"
+  },
+  {
+    "id": "00000000-0000-0000-0001-000000000004",
+    "userName": "member1",
+    "displayName": "王小明",
+    "role": "Member"
+  },
+  {
+    "id": "00000000-0000-0000-0001-000000000005",
+    "userName": "member2",
+    "displayName": "李美玲",
+    "role": "Member"
+  },
+  {
+    "id": "00000000-0000-0000-0001-000000000006",
+    "userName": "member3",
+    "displayName": "張家豪",
+    "role": "Member"
+  }
+]
