@@ -3,46 +3,63 @@
     ViewData["Title"] = Model.Title;
 }
 
-<a asp-action="Index">&larr; 回頻道清單</a>
+<div class="row g-3">
+    <aside class="col-md-4 col-lg-3">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="channelDrawer" aria-labelledby="channelDrawerLabel">
+            <div class="offcanvas-header">
+                <p class="offcanvas-title h5" id="channelDrawerLabel">頻道清單</p>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#channelDrawer" aria-label="關閉"></button>
+            </div>
+            <div class="offcanvas-body">
+                @await Component.InvokeAsync("ChannelSidebar", new { currentChannelId = Model.Channel.Id })
+            </div>
+        </div>
+    </aside>
 
-<div class="d-flex flex-wrap align-items-center gap-2 my-3">
-    <h1 class="h3 mb-0 text-break">@Model.Title</h1>
-    <partial name="_ChannelBadges" model="Model.Channel" />
-</div>
+    <section class="col-12 col-md-8 col-lg-9">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary d-md-none" data-bs-toggle="offcanvas"
+                    data-bs-target="#channelDrawer" aria-controls="channelDrawer">&#9776; 頻道</button>
+            <h1 class="h4 mb-0 text-break">@Model.Title</h1>
+            <partial name="_ChannelBadges" model="Model.Channel" />
 
-@if (Model.Channel.Type != ChannelType.Direct)
-{
-    <div class="d-flex flex-wrap gap-2 mb-3">
-        <a class="btn btn-outline-secondary" asp-action="Members" asp-route-id="@Model.Channel.Id">
-            @(Model.CanManageMembers ? "管理成員" : "成員")（@Model.Members.Count）
-        </a>
-        @if (Model.Channel.Type == ChannelType.Public && !Model.Channel.IsArchived)
+            @if (Model.Channel.Type != ChannelType.Direct)
+            {
+                <div class="d-flex flex-wrap gap-2 ms-auto">
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="Members" asp-route-id="@Model.Channel.Id">
+                        @(Model.CanManageMembers ? "管理成員" : "成員")（@Model.Members.Count）
+                    </a>
+                    @if (Model.Channel.Type == ChannelType.Public && !Model.Channel.IsArchived)
+                    {
+                        if (Model.IsMember)
+                        {
+                            <form asp-action="Leave" asp-route-id="@Model.Channel.Id" method="post">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">離開頻道</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-action="Join" asp-route-id="@Model.Channel.Id" method="post">
+                                <button type="submit" class="btn btn-sm btn-primary">加入頻道</button>
+                            </form>
+                        }
+                    }
+                </div>
+            }
+        </div>
+
+        @if (Model.Messages is not null)
         {
-            if (Model.IsMember)
-            {
-                <form asp-action="Leave" asp-route-id="@Model.Channel.Id" method="post">
-                    <button type="submit" class="btn btn-outline-danger">離開頻道</button>
-                </form>
-            }
-            else
-            {
-                <form asp-action="Join" asp-route-id="@Model.Channel.Id" method="post">
-                    <button type="submit" class="btn btn-primary">加入頻道</button>
-                </form>
-            }
+            <partial name="_MessageList" model="Model" />
+            <partial name="_MessageComposer" model="Model" />
         }
-    </div>
-}
-
-@if (Model.IsMember)
-{
-    <p class="text-muted">訊息功能尚未開放。</p>
-}
-else if (Model.Channel.IsArchived)
-{
-    <p class="text-muted">你不是成員，看不到訊息內容；頻道已封存，無法加入。</p>
-}
-else
-{
-    <p class="text-muted">加入頻道後才能看到訊息內容。</p>
-}
+        else if (Model.Channel.IsArchived)
+        {
+            <p class="text-muted">你不是成員，看不到訊息內容；頻道已封存，無法加入。</p>
+        }
+        else
+        {
+            <p class="text-muted">加入頻道後才能看到訊息內容。</p>
+        }
+    </section>
+</div>

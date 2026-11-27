@@ -1,0 +1,76 @@
+@model LiveChat.ViewModels.ChannelViewModel
+@{
+    var messagePage = Model.Messages!;
+    var channelId = Model.Channel.Id;
+}
+
+<div class="chat-messages border rounded p-2 mb-2" data-scroll-bottom>
+    @if (messagePage.HasOlder)
+    {
+        <div class="text-center mb-2">
+            <a class="btn btn-sm btn-outline-secondary" asp-controller="Channels" asp-action="Details"
+               asp-route-id="@channelId" asp-route-before="@messagePage.Messages[0].Id">載入更早訊息</a>
+        </div>
+    }
+    @if (messagePage.Messages.Count == 0)
+    {
+        <p class="text-muted text-center my-4">還沒有任何訊息。</p>
+    }
+    <ol class="list-unstyled mb-0">
+        @foreach (var message in messagePage.Messages)
+        {
+            var isEditing = Model.EditingMessageId == message.Id;
+            <li class="chat-message py-2" id="message-@message.Id">
+                <div class="d-flex flex-wrap align-items-baseline gap-2">
+                    <strong class="text-break">@message.SenderName</strong>
+                    <time class="small text-muted" datetime="@message.CreatedAt.ToString("o")">@message.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</time>
+                    @if (message.IsEdited && !message.IsDeleted)
+                    {
+                        <span class="small text-muted">（已編輯）</span>
+                    }
+                </div>
+                @if (message.IsDeleted)
+                {
+                    <div class="text-muted fst-italic">此訊息已刪除</div>
+                }
+                else
+                {
+                    <div class="chat-content">@message.Content</div>
+                }
+                @if (message.CanEdit || message.CanDelete)
+                {
+                    <div class="d-flex flex-wrap align-items-start gap-3">
+                        @if (message.CanEdit)
+                        {
+                            <details class="chat-edit" open="@isEditing">
+                                <summary class="small text-primary">編輯</summary>
+                                <form asp-controller="Channels" asp-action="EditMessage" asp-route-id="@channelId" method="post" class="mt-1">
+                                    <input type="hidden" name="messageId" value="@message.Id" />
+                                    <input type="hidden" name="before" value="@Model.Before" />
+                                    <textarea name="content" class="form-control mb-1" rows="2" required aria-label="編輯訊息內容">@(isEditing ? Model.Draft : message.Content)</textarea>
+                                    <button type="submit" class="btn btn-sm btn-primary">儲存</button>
+                                </form>
+                            </details>
+                        }
+                        @if (message.CanDelete)
+                        {
+                            <form asp-controller="Channels" asp-action="DeleteMessage" asp-route-id="@channelId" method="post"
+                                  data-confirm="確定要刪除這則訊息嗎？">
+                                <input type="hidden" name="messageId" value="@message.Id" />
+                                <input type="hidden" name="before" value="@Model.Before" />
+                                <button type="submit" class="btn btn-link btn-sm link-danger p-0">刪除</button>
+                            </form>
+                        }
+                    </div>
+                }
+            </li>
+        }
+    </ol>
+</div>
+
+@if (Model.Before is not null)
+{
+    <div class="text-center mb-2">
+        <a class="btn btn-sm btn-outline-primary" asp-controller="Channels" asp-action="Details" asp-route-id="@channelId">回到最新訊息</a>
+    </div>
+}

@@ -12,5 +12,7 @@ namespace LiveChat.ViewModels
         public IReadOnlyList<DirectConversation> Directs { get; init; } = Array.Empty<DirectConversation>();
 
         public IReadOnlyList<User> DirectCandidates { get; init; } = Array.Empty<User>();
+
+        public IReadOnlyDictionary<Guid, int> UnreadCounts { get; init; } = new Dictionary<Guid, int>();
     }
 }

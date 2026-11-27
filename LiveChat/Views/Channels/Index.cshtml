@@ -21,6 +21,7 @@
                 <a class="list-group-item list-group-item-action d-flex align-items-center gap-2" asp-action="Details" asp-route-id="@channel.Id">
                     <span class="flex-grow-1 text-truncate">@channel.Name</span>
                     <partial name="_ChannelBadges" model="channel" />
+                    <partial name="_UnreadBadge" model="Model.UnreadCounts.GetValueOrDefault(channel.Id)" />
                 </a>
             }
         </div>
@@ -67,6 +68,7 @@
                 <a class="list-group-item list-group-item-action d-flex align-items-center gap-2" asp-action="Details" asp-route-id="@direct.Channel.Id">
                     <span class="flex-grow-1 text-truncate">@direct.OtherUser.DisplayName</span>
                     <partial name="_ChannelBadges" model="direct.Channel" />
+                    <partial name="_UnreadBadge" model="Model.UnreadCounts.GetValueOrDefault(direct.Channel.Id)" />
                 </a>
             }
         </div>

@@ -9,3 +9,16 @@ document.addEventListener('change', (event) => {
         event.target.form.requestSubmit();
     }
 });
+
+// 標記 data-confirm 的表單，送出前先確認
+document.addEventListener('submit', (event) => {
+    const message = event.target.dataset.confirm;
+    if (message && !window.confirm(message)) {
+        event.preventDefault();
+    }
+});
+
+// 標記 data-scroll-bottom 的區塊，載入時捲到最下方（最新訊息）
+document.querySelectorAll('[data-scroll-bottom]').forEach((element) => {
+    element.scrollTop = element.scrollHeight;
+});
