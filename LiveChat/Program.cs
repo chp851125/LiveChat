@@ -1,15 +1,35 @@
 using LiveChat.DevTools;
 using LiveChat.Repositories;
+using LiveChat.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+});
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.AccessDeniedPath = "/Account/Login";
+        options.Cookie.Name = "LiveChat.Auth";
+    });
+
+// 未標記 [AllowAnonymous] 的端點一律需要登入
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
 
 // Repository 註冊區
 builder.Services.AddSingleton(typeof(IRepository<>), typeof(JsonFileRepository<>));
 
 // Service 註冊區（builder.Services.AddScoped<IXxxService, XxxService>();）
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Development 工具
 if (builder.Environment.IsDevelopment())
@@ -48,9 +68,10 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
+app.MapStaticAssets().AllowAnonymous();
 
 app.MapControllerRoute(
     name: "default",

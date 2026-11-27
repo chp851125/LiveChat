@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -27,6 +27,16 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="d-flex align-items-center gap-2 py-2 py-sm-0">
+                            <span class="text-nowrap">@User.Identity.Name</span>
+                            <span class="badge @(User.IsInRole("Admin") ? "text-bg-primary" : "text-bg-secondary")">@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</span>
+                            <form asp-controller="Account" asp-action="Logout" method="post">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary text-nowrap">登出</button>
+                            </form>
+                        </div>
+                    }
                 </div>
             </div>
         </nav>
