@@ -36,6 +36,8 @@ builder.Services.AddSingleton(typeof(IRepository<>), typeof(JsonFileRepository<>
 // Service 註冊區（builder.Services.AddScoped<IXxxService, XxxService>();）
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IChannelService, ChannelService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddSingleton<IMessageRateLimiter, MessageRateLimiter>();
 
 // Development 工具
 if (builder.Environment.IsDevelopment())
