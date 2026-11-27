@@ -1,4 +1,5 @@
 using LiveChat.Models;
+using LiveChat.Services;
 
 namespace LiveChat.DevTools
 {
@@ -6,7 +7,6 @@ namespace LiveChat.DevTools
     public class SeedValidator
     {
         private const int ExpectedCount = 3;
-        private static readonly TimeSpan EditWindow = TimeSpan.FromMinutes(5);
         private static readonly TimeSpan DateRange = TimeSpan.FromDays(30);
 
         public IReadOnlyList<SeedCheck> Validate(SeedDataSet data, DateTime utcNow)
@@ -111,19 +111,18 @@ namespace LiveChat.DevTools
             // 訊息四類互斥：已刪除 > 含提及 > 依發送時間分可否編輯
             var alive = data.Messages.Where(x => !x.IsDeleted).ToList();
             var plain = alive.Where(x => x.MentionUserIds.Count == 0).ToList();
-            Count("訊息：可編輯（未滿 5 分鐘）", plain.Count(x => utcNow - x.CreatedAt < EditWindow));
-            Count("訊息：不可編輯（超過 5 分鐘）", plain.Count(x => utcNow - x.CreatedAt >= EditWindow));
+            Count("訊息：可編輯（未滿 5 分鐘）", plain.Count(x => utcNow - x.CreatedAt < MessageService.EditWindow));
+            Count("訊息：不可編輯（超過 5 分鐘）", plain.Count(x => utcNow - x.CreatedAt >= MessageService.EditWindow));
             Count("訊息：已刪除", data.Messages.Count(x => x.IsDeleted));
             Count("訊息：含 @提及", alive.Count(x => x.MentionUserIds.Count > 0));
 
-            // 晚於 LastReadAt 且非自己發送（R10）
+            // 未讀判定與畫面共用（R10）
             List<Message> Unread(ReadMarker marker) => data.Messages
                 .Where(x => x.ChannelId == marker.ChannelId
-                    && x.SenderId != marker.UserId
-                    && x.CreatedAt > marker.LastReadAt)
+                    && ReadMarkerService.IsUnread(x, marker.UserId, marker.LastReadAt))
                 .ToList();
 
-            Count("已讀標記：有未讀", data.ReadMarkers.Count(x => Unread(x).Any(m => !m.IsDeleted)));
+            Count("已讀標記：有未讀", data.ReadMarkers.Count(x => Unread(x).Count > 0));
             Count("已讀標記：全已讀", data.ReadMarkers.Count(x =>
                 Unread(x).Count == 0 && data.Messages.Any(m => m.ChannelId == x.ChannelId)));
         }

@@ -1,0 +1,43 @@
+@model LiveChat.ViewModels.ChannelSidebarViewModel
+
+<nav class="w-100" aria-label="我的頻道">
+    <a class="d-block mb-2" asp-controller="Channels" asp-action="Index">所有頻道</a>
+
+    <h2 class="h6 text-muted">頻道</h2>
+    @if (Model.Joined.Count == 0)
+    {
+        <p class="small text-muted">尚未加入任何頻道。</p>
+    }
+    <div class="list-group mb-3">
+        @foreach (var channel in Model.Joined)
+        {
+            var isCurrent = channel.Id == Model.CurrentChannelId;
+            <a class="list-group-item list-group-item-action d-flex align-items-center gap-2 @(isCurrent ? "active" : "")"
+               aria-current="@(isCurrent ? "page" : null)"
+               asp-controller="Channels" asp-action="Details" asp-route-id="@channel.Id">
+                <span class="flex-grow-1 text-truncate">@channel.Name</span>
+                <partial name="_ChannelBadges" model="channel" />
+                <partial name="_UnreadBadge" model="Model.UnreadCounts.GetValueOrDefault(channel.Id)" />
+            </a>
+        }
+    </div>
+
+    <h2 class="h6 text-muted">私訊</h2>
+    @if (Model.Directs.Count == 0)
+    {
+        <p class="small text-muted">尚無私訊。</p>
+    }
+    <div class="list-group">
+        @foreach (var direct in Model.Directs)
+        {
+            var isCurrent = direct.Channel.Id == Model.CurrentChannelId;
+            <a class="list-group-item list-group-item-action d-flex align-items-center gap-2 @(isCurrent ? "active" : "")"
+               aria-current="@(isCurrent ? "page" : null)"
+               asp-controller="Channels" asp-action="Details" asp-route-id="@direct.Channel.Id">
+                <span class="flex-grow-1 text-truncate">@direct.OtherUser.DisplayName</span>
+                <partial name="_ChannelBadges" model="direct.Channel" />
+                <partial name="_UnreadBadge" model="Model.UnreadCounts.GetValueOrDefault(direct.Channel.Id)" />
+            </a>
+        }
+    </div>
+</nav>

@@ -1,0 +1,22 @@
+@model LiveChat.ViewModels.ChannelViewModel
+@{
+    var disabled = Model.SendRestriction is not null;
+    var placeholder = disabled
+        ? "目前無法發送訊息"
+        : $"輸入訊息（最多 {LiveChat.Services.MessageService.MaxContentLength} 字）";
+    // 編輯失敗時的草稿屬於編輯框，不放進這裡
+    var draft = Model.EditingMessageId is null ? Model.Draft : null;
+}
+
+<form asp-controller="Channels" asp-action="Send" asp-route-id="@Model.Channel.Id" method="post">
+    @if (disabled)
+    {
+        <p class="alert alert-warning py-2 mb-2" id="sendRestriction">@Model.SendRestriction</p>
+    }
+    <div class="d-flex align-items-end gap-2">
+        <textarea name="content" class="form-control" rows="2" required disabled="@disabled"
+                  aria-label="訊息內容" aria-describedby="@(disabled ? "sendRestriction" : null)"
+                  placeholder="@placeholder">@draft</textarea>
+        <button type="submit" class="btn btn-primary text-nowrap" disabled="@disabled">送出</button>
+    </div>
+</form>

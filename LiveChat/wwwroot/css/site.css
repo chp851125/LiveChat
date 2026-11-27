@@ -29,3 +29,39 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+/* 聊天室 */
+#channelDrawer {
+  /* 手機版抽屜留一點背景，點背景即可關閉 */
+  --bs-offcanvas-width: min(85vw, 20rem);
+}
+
+.chat-messages {
+  height: calc(100vh - 21rem);
+  height: calc(100dvh - 21rem);
+  min-height: 14rem;
+  overflow-y: auto;
+}
+
+/* 停用原因佔掉的高度從訊息區扣回，讓輸入框留在畫面內 */
+.chat-messages:has(~ form #sendRestriction) {
+  height: calc(100vh - 26rem);
+  height: calc(100dvh - 26rem);
+}
+
+.chat-message + .chat-message {
+  border-top: 1px solid var(--bs-border-color-translucent);
+}
+
+.chat-content {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.chat-edit[open] {
+  flex-basis: 100%;
+}
+
+.list-group-item.active .unread-badge {
+  border: 1px solid #fff;
+}

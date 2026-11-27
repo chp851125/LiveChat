@@ -8,10 +8,17 @@ namespace LiveChat.Controllers
     public class ChannelsController : Controller
     {
         private readonly IChannelService _channelService;
+        private readonly IMessageService _messageService;
+        private readonly IReadMarkerService _readMarkerService;
 
-        public ChannelsController(IChannelService channelService)
+        public ChannelsController(
+            IChannelService channelService,
+            IMessageService messageService,
+            IReadMarkerService readMarkerService)
         {
             _channelService = channelService;
+            _messageService = messageService;
+            _readMarkerService = readMarkerService;
         }
 
         [HttpGet]
@@ -23,7 +30,8 @@ namespace LiveChat.Controllers
                 Joined = _channelService.GetJoinedChannels(userId),
                 Joinable = _channelService.GetJoinableChannels(userId),
                 Directs = _channelService.GetDirectConversations(userId),
-                DirectCandidates = _channelService.GetDirectCandidates(userId)
+                DirectCandidates = _channelService.GetDirectCandidates(userId),
+                UnreadCounts = _readMarkerService.GetUnreadCounts(userId)
             });
         }
 
@@ -52,10 +60,54 @@ namespace LiveChat.Controllers
         }
 
         [HttpGet]
-        public IActionResult Details(Guid id) => ShowChannel(id);
+        public IActionResult Details(Guid id, Guid? before) => ShowChatRoom(id, before);
 
         [HttpGet]
         public IActionResult Members(Guid id) => ShowChannel(id);
+
+        [HttpPost]
+        public IActionResult Send(Guid id, string? content)
+        {
+            try
+            {
+                _messageService.Send(id, User.GetUserId(), content ?? string.Empty);
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            catch (ChannelAccessDeniedException ex)
+            {
+                return RedirectToList(ex.Message);
+            }
+            catch (BusinessRuleException ex)
+            {
+                // 直接重新顯示聊天室，保留輸入內容
+                TempData["ErrorMessage"] = ex.Message;
+                return ShowChatRoom(id, before: null, draft: content);
+            }
+        }
+
+        [HttpPost]
+        public IActionResult EditMessage(Guid id, Guid messageId, string? content, Guid? before)
+        {
+            try
+            {
+                _messageService.Edit(messageId, User.GetUserId(), content ?? string.Empty);
+                return RedirectToAction(nameof(Details), new { id, before });
+            }
+            catch (ChannelAccessDeniedException ex)
+            {
+                return RedirectToList(ex.Message);
+            }
+            catch (BusinessRuleException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return ShowChatRoom(id, before, draft: content, editingMessageId: messageId);
+            }
+        }
+
+        [HttpPost]
+        public IActionResult DeleteMessage(Guid id, Guid messageId, Guid? before) =>
+            Execute(() => _messageService.Delete(messageId, User.GetUserId()), "已刪除訊息。",
+                RedirectToAction(nameof(Details), new { id, before }));
 
         [HttpPost]
         public IActionResult Join(Guid id) =>
@@ -91,36 +143,71 @@ namespace LiveChat.Controllers
             }
         }
 
-        // Details 與 Members 共用同一份資料與權限檢查，View 依 action 名稱選取
-        private IActionResult ShowChannel(Guid id)
+        // 進入聊天室即更新已讀（R10）；POST 失敗時也由此重新顯示，所以指定 View 名稱
+        private IActionResult ShowChatRoom(
+            Guid id, Guid? before, string? draft = null, Guid? editingMessageId = null)
         {
             var userId = User.GetUserId();
             try
             {
-                var channel = _channelService.GetAccessibleChannel(id, userId);
-                var members = _channelService.GetMembers(id);
-                var canManage = channel.Type == ChannelType.Private
-                    && channel.CreatedByUserId == userId
-                    && !channel.IsArchived;
-
-                return View(new ChannelViewModel
+                var model = BuildChannelViewModel(id, userId);
+                if (!model.IsMember)
                 {
-                    Channel = channel,
-                    Title = channel.Type == ChannelType.Direct
-                        ? members.FirstOrDefault(x => x.Id != userId)?.DisplayName ?? channel.Name
-                        : channel.Name,
-                    Members = members,
-                    IsMember = members.Any(x => x.Id == userId),
-                    CanManageMembers = canManage,
-                    InviteCandidates = canManage
-                        ? _channelService.GetNonMembers(id)
-                        : Array.Empty<User>()
+                    return View(nameof(Details), model);
+                }
+
+                // 先標記再讀取：期間新進的訊息仍算未讀，不會漏掉
+                _readMarkerService.MarkAsRead(id, userId);
+
+                return View(nameof(Details), model with
+                {
+                    Messages = _messageService.GetMessages(id, userId, before),
+                    SendRestriction = _messageService.GetSendRestriction(id, userId),
+                    Before = before,
+                    Draft = draft,
+                    EditingMessageId = editingMessageId
                 });
             }
             catch (ChannelAccessDeniedException ex)
             {
                 return RedirectToList(ex.Message);
             }
+        }
+
+        private IActionResult ShowChannel(Guid id)
+        {
+            try
+            {
+                return View(BuildChannelViewModel(id, User.GetUserId()));
+            }
+            catch (ChannelAccessDeniedException ex)
+            {
+                return RedirectToList(ex.Message);
+            }
+        }
+
+        // 聊天室與成員頁共用同一份資料與權限檢查
+        private ChannelViewModel BuildChannelViewModel(Guid id, Guid userId)
+        {
+            var channel = _channelService.GetAccessibleChannel(id, userId);
+            var members = _channelService.GetMembers(id);
+            var canManage = channel.Type == ChannelType.Private
+                && channel.CreatedByUserId == userId
+                && !channel.IsArchived;
+
+            return new ChannelViewModel
+            {
+                Channel = channel,
+                Title = channel.Type == ChannelType.Direct
+                    ? members.FirstOrDefault(x => x.Id != userId)?.DisplayName ?? channel.Name
+                    : channel.Name,
+                Members = members,
+                IsMember = members.Any(x => x.Id == userId),
+                CanManageMembers = canManage,
+                InviteCandidates = canManage
+                    ? _channelService.GetNonMembers(id)
+                    : Array.Empty<User>()
+            };
         }
 
         // 沒有權限時一律導回清單；其他規則錯誤回到原頁面提示

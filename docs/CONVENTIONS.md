@@ -81,8 +81,30 @@
 - `ChannelAccessDeniedException`（繼承 `BusinessRuleException`）：不存在與無權限用同一訊息；Controller 一律導回頻道清單。
 - 多步驟寫入規則共用 `ChannelService` 的靜態鎖；異動 `Channel` / `ChannelMember` 要經由此 Service。
 
+## 訊息規則（`MessageService`、`ReadMarkerService`）
+
+- 發送、編輯、刪除（R4～R9）一律呼叫 `IMessageService`；Controller 與之後的 Hub 不得重寫或預先判斷規則。
+- 需求未明訂、已確認的規則：
+  - 讀取、發送、編輯、刪除都要求操作者目前是頻道成員，Admin 也一樣。
+  - 封存頻道完全唯讀，包含刪除。
+  - 禁言中不可發送、不可編輯，但可刪除（依 R6 的權限）。
+  - 未讀數不計入已刪除訊息；沒有 `ReadMarker` 的頻道，別人的訊息全部算未讀。
+- R4：換行先統一為 `\n` 再去前後空白，一個換行算一字；長度以 `string.Length` 計（部分表情符號算 2 字以上）。
+- R5：發送未滿 5 分鐘（`MessageService.EditWindow`）才可編輯。
+- R9：`IMessageRateLimiter`（Singleton，記憶體滑動視窗，重啟歸零）；通過其他檢查的發送才佔額度，跨頻道合併計算，不含編輯與刪除。
+- 畫面是否顯示編輯、刪除、停用原因，取自 `MessagePage` / `MessageEntry` / `GetSendRestriction`，View 不自行判斷。
+- `MessageEntry` 已刪除時 `Content` 為空字串；刪除是軟刪除，JSON 保留原內容。
+- 分頁：每頁 `MessageService.PageSize`（50）則，游標為訊息 Id（網址 `?before=`）。
+- 未讀判定唯一來源：`ReadMarkerService.IsUnread`；進入聊天室（成員）呼叫 `MarkAsRead`。
+- 異動 `Message` 經由 `MessageService`、異動 `ReadMarker` 經由 `ReadMarkerService`（各自的靜態鎖）。
+- 發送時尚未解析 `@提及`，`MentionUserIds` 為空。
+
 ## 畫面
 
+- 聊天室是 `Channels/Details`，訊息以一般表單 POST（`Send`、`EditMessage`、`DeleteMessage`）；失敗時直接重新顯示聊天室並保留輸入內容。
+- 聊天室元件：`_MessageList`、`_MessageComposer`、View Component `ChannelSidebar`；手機版（小於 `md`）清單收進 `#channelDrawer`（Bootstrap `offcanvas-md`）。
+- 未讀數標籤用 `_UnreadBadge`（0 不顯示，超過 99 顯示 `99+`）。
+- 送出前需確認：表單加 `data-confirm="訊息"`；載入時捲到底的區塊加 `data-scroll-bottom`（皆在 `site.js`）。
 - 首頁 `Home/Index` 導向頻道清單 `Channels/Index`。
 - 提示訊息：Controller 寫 `TempData["StatusMessage"]`（成功）或 `TempData["ErrorMessage"]`（失敗），由版面的 `_StatusMessages` 顯示。
 - 共用 Partial `_Xxx.cshtml` 放 `Views/Shared/`；頻道類型與封存標籤用 `_ChannelBadges`。
