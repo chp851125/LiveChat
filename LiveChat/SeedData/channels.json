@@ -1,1 +1,86 @@
-[]
+[
+  {
+    "id": "00000000-0000-0000-0002-000000000001",
+    "name": "公告",
+    "type": "Public",
+    "isArchived": false,
+    "createdByUserId": "00000000-0000-0000-0001-000000000001"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000002",
+    "name": "閒聊",
+    "type": "Public",
+    "isArchived": false,
+    "createdByUserId": "00000000-0000-0000-0001-000000000004"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000003",
+    "name": "技術討論",
+    "type": "Public",
+    "isArchived": false,
+    "createdByUserId": "00000000-0000-0000-0001-000000000005"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000004",
+    "name": "管理團隊",
+    "type": "Private",
+    "isArchived": false,
+    "createdByUserId": "00000000-0000-0000-0001-000000000001"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000005",
+    "name": "專案A",
+    "type": "Private",
+    "isArchived": false,
+    "createdByUserId": "00000000-0000-0000-0001-000000000004"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000006",
+    "name": "讀書會",
+    "type": "Private",
+    "isArchived": false,
+    "createdByUserId": "00000000-0000-0000-0001-000000000005"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000007",
+    "name": "admin1, member1",
+    "type": "Direct",
+    "isArchived": false,
+    "createdByUserId": "00000000-0000-0000-0001-000000000001"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000008",
+    "name": "member1, member2",
+    "type": "Direct",
+    "isArchived": false,
+    "createdByUserId": "00000000-0000-0000-0001-000000000004"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000009",
+    "name": "member2, member3",
+    "type": "Direct",
+    "isArchived": false,
+    "createdByUserId": "00000000-0000-0000-0001-000000000005"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000010",
+    "name": "舊專案",
+    "type": "Public",
+    "isArchived": true,
+    "createdByUserId": "00000000-0000-0000-0001-000000000001"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000011",
+    "name": "活動籌備",
+    "type": "Public",
+    "isArchived": true,
+    "createdByUserId": "00000000-0000-0000-0001-000000000006"
+  },
+  {
+    "id": "00000000-0000-0000-0002-000000000012",
+    "name": "臨時小組",
+    "type": "Private",
+    "isArchived": true,
+    "createdByUserId": "00000000-0000-0000-0001-000000000002"
+  }
+]
