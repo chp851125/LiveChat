@@ -1,0 +1,10 @@
+@model Channel
+
+@if (Model.Type != ChannelType.Direct)
+{
+    <span class="badge flex-shrink-0 @(Model.Type == ChannelType.Private ? "text-bg-dark" : "text-bg-info")">@(Model.Type == ChannelType.Private ? "私人" : "公開")</span>
+}
+@if (Model.IsArchived)
+{
+    <span class="badge flex-shrink-0 text-bg-secondary">已封存</span>
+}

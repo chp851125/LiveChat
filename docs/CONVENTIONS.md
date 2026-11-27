@@ -70,8 +70,24 @@
 - 建立 `ClaimsPrincipal` 一律用 `IAuthService.CreatePrincipal`。
 - 全域啟用 `AutoValidateAntiforgeryTokenAttribute`；POST 表單用 form tag helper 產生權杖。
 
+## 頻道規則（`ChannelService`）
+
+- 需求未明訂、已確認的規則：
+  - 名稱去前後空白後 1～50 字（`ChannelService.MaxNameLength`）；只有公開頻道之間不分大小寫不可重名（含已封存）。
+  - 已封存頻道不能加入、離開、邀請、移除；仍列在「我加入的頻道」，不列入可加入清單。
+  - 私人頻道成員不能自行退出；建立者不能被移除。
+- 私訊 `Channel.Name` 存 `帳號, 帳號`，畫面一律顯示對方的 DisplayName；不能和自己私訊。
+- 讀取頻道內容前一律呼叫 `GetAccessibleChannel`（公開頻道任何人可取得，私人與私訊限成員）。訊息內容另需確認是成員（R1）。
+- `ChannelAccessDeniedException`（繼承 `BusinessRuleException`）：不存在與無權限用同一訊息；Controller 一律導回頻道清單。
+- 多步驟寫入規則共用 `ChannelService` 的靜態鎖；異動 `Channel` / `ChannelMember` 要經由此 Service。
+
 ## 畫面
 
+- 首頁 `Home/Index` 導向頻道清單 `Channels/Index`。
+- 提示訊息：Controller 寫 `TempData["StatusMessage"]`（成功）或 `TempData["ErrorMessage"]`（失敗），由版面的 `_StatusMessages` 顯示。
+- 共用 Partial `_Xxx.cshtml` 放 `Views/Shared/`；頻道類型與封存標籤用 `_ChannelBadges`。
+- 目前登入者 Id：`User.GetUserId()`（`Controllers/ClaimsPrincipalExtensions`）。
+- RWD 用 Bootstrap 格線；清單項目的長名稱用 `flex-grow-1 text-truncate`。
 - 共用版面 `Views/Shared/_Layout.cshtml`：頂部導覽、登入者名稱與角色、登出；Development 時其下顯示工具列（View Component `DevToolbar`）。
 - View Component：類別 `XxxViewComponent`，畫面 `Views/Shared/Components/Xxx/Default.cshtml`。
 - 畫面用模型命名 `XxxViewModel`。

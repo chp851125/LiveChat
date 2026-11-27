@@ -1,0 +1,42 @@
+@model LiveChat.ViewModels.CreateChannelViewModel
+@{
+    ViewData["Title"] = "建立頻道";
+}
+
+<div class="row justify-content-center">
+    <div class="col-sm-10 col-md-7 col-lg-5">
+        <h1 class="h3 mb-3">建立頻道</h1>
+
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" autocomplete="off" autofocus />
+                <div class="form-text">1～@(LiveChat.Services.ChannelService.MaxNameLength) 字。</div>
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <fieldset class="mb-3">
+                <legend class="form-label fs-6">類型</legend>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" asp-for="Type" value="@ChannelType.Public" id="typePublic" />
+                    <label class="form-check-label" for="typePublic">公開：任何人可加入</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" asp-for="Type" value="@ChannelType.Private" id="typePrivate" />
+                    <label class="form-check-label" for="typePrivate">私人：只有成員看得到，由建立者邀請</label>
+                </div>
+            </fieldset>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">建立</button>
+                <a class="btn btn-outline-secondary" asp-action="Index">取消</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,57 @@
+@model LiveChat.ViewModels.ChannelViewModel
+@{
+    ViewData["Title"] = $"{Model.Title} 成員";
+}
+
+<a asp-action="Details" asp-route-id="@Model.Channel.Id">&larr; 回頻道</a>
+
+<div class="row">
+    <div class="col-md-8 col-lg-6">
+        <div class="d-flex flex-wrap align-items-center gap-2 my-3">
+            <h1 class="h3 mb-0 text-break">@Model.Title 成員</h1>
+            <partial name="_ChannelBadges" model="Model.Channel" />
+        </div>
+
+        @if (Model.CanManageMembers)
+        {
+            if (Model.InviteCandidates.Count == 0)
+            {
+                <p class="text-muted">所有人都已是成員。</p>
+            }
+            else
+            {
+                <form asp-action="Invite" asp-route-id="@Model.Channel.Id" method="post" class="input-group mb-3">
+                    <select name="userId" class="form-select" aria-label="邀請對象" required>
+                        <option value="">選擇要邀請的人</option>
+                        @foreach (var user in Model.InviteCandidates)
+                        {
+                            <option value="@user.Id">@user.DisplayName（@user.UserName）</option>
+                        }
+                    </select>
+                    <button type="submit" class="btn btn-primary">邀請</button>
+                </form>
+            }
+        }
+
+        <ul class="list-group">
+            @foreach (var member in Model.Members)
+            {
+                var isCreator = member.Id == Model.Channel.CreatedByUserId;
+                <li class="list-group-item d-flex align-items-center gap-2">
+                    <span class="flex-grow-1 text-truncate">@member.DisplayName（@member.UserName）</span>
+                    @if (isCreator && Model.Channel.Type != ChannelType.Direct)
+                    {
+                        <span class="badge text-bg-primary flex-shrink-0">建立者</span>
+                    }
+                    @if (Model.CanManageMembers && !isCreator)
+                    {
+                        <form asp-action="Remove" asp-route-id="@Model.Channel.Id" method="post">
+                            <input type="hidden" name="userId" value="@member.Id" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger text-nowrap">移除</button>
+                        </form>
+                    }
+                </li>
+            }
+        </ul>
+    </div>
+</div>
