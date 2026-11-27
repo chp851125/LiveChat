@@ -6,4 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- 執行期資料不隨建置或發佈輸出 -->
+    <Content Remove="App_Data\**" />
+  </ItemGroup>
+
 </Project>

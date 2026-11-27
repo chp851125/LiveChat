@@ -3,6 +3,9 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+# LiveChat 執行期資料
+App_Data/
+
 # dotenv files
 .env
 
