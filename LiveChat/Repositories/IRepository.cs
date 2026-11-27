@@ -15,5 +15,8 @@ namespace LiveChat.Repositories
         bool Delete(Guid id);
 
         IReadOnlyList<T> Find(Func<T, bool> predicate);
+
+        /// <summary>以指定內容整批覆蓋（重置測試資料用）。</summary>
+        void ReplaceAll(IEnumerable<T> entities);
     }
 }
