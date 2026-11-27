@@ -17,6 +17,8 @@
 | `App_Data/` | 執行期資料（首次啟動產生，不進版控） |
 
 尚無內容的資料夾，等有檔案時再建立。
+範本原有的 `Models/ErrorViewModel.cs` 維持原位；之後新增的畫面用模型一律放 `ViewModels/`。
+`App_Data/` 已在 `.gitignore` 排除，並在 `LiveChat.csproj` 排除於建置與發佈輸出之外。
 
 ## 分層規則
 
@@ -24,6 +26,7 @@
 - 規則一律寫在 Service，Controller 與 Hub 只負責呼叫與回應。
 - 錯誤訊息用繁體中文，統一由 Service 丟出 `BusinessRuleException`（含訊息）。
 - 所有時間存 UTC，顯示時才轉本地。
+- `BusinessRuleException` 尚未建立；建立第一個 Service 時新增於 `Services/`。
 
 ## 程式風格
 
