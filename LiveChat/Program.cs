@@ -37,6 +37,7 @@ builder.Services.AddSingleton(typeof(IRepository<>), typeof(JsonFileRepository<>
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IChannelService, ChannelService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IReadMarkerService, ReadMarkerService>();
 builder.Services.AddSingleton<IMessageRateLimiter, MessageRateLimiter>();
 
 // Development 工具
