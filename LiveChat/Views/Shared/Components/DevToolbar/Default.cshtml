@@ -1,0 +1,33 @@
+@model LiveChat.ViewModels.DevToolbarViewModel
+
+<div class="dev-toolbar bg-warning-subtle border-bottom py-2 mb-3">
+    <div class="container-fluid d-flex flex-wrap align-items-center gap-2">
+        <span class="badge text-bg-warning">Development</span>
+
+        <form asp-controller="Dev" asp-action="SwitchUser" method="post" class="d-flex align-items-center gap-2">
+            <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+            <label for="devSwitchUser" class="small text-nowrap">快速切換使用者</label>
+            <select id="devSwitchUser" name="userId" class="form-select form-select-sm w-auto" data-auto-submit>
+                <option value="" disabled selected="@(Model.Users.All(x => x.Id != Model.CurrentUserId))">請選擇</option>
+                @foreach (var user in Model.Users)
+                {
+                    <option value="@user.Id" selected="@(user.Id == Model.CurrentUserId)">@user.DisplayName（@user.UserName，@user.Role）</option>
+                }
+            </select>
+        </form>
+
+        <form asp-controller="Dev" asp-action="Reset" method="post">
+            <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+            <button type="submit" class="btn btn-sm btn-outline-danger">重置測試資料</button>
+        </form>
+
+        @if (TempData["DevMessage"] is string message)
+        {
+            <span class="small text-success" role="status">@message</span>
+        }
+        @if (TempData["DevError"] is string error)
+        {
+            <span class="small text-danger" role="alert">@error</span>
+        }
+    </div>
+</div>
